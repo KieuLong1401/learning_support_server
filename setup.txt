@@ -1,0 +1,11 @@
+conda env create -f environment.yml
+conda init
+conda activate learning_support
+
+pip install git+https://github.com/ramsrigouthamg/Questgen.ai
+pip install git+https://github.com/boudinfl/pke.git
+
+python -m nltk.downloader universal_tagset
+python -m spacy download en
+
+uvicorn app:app --reload
