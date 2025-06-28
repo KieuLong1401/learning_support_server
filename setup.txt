@@ -1,4 +1,3 @@
-conda env create -f environment.yml
 conda init
 conda activate learning_support
 

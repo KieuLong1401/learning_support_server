@@ -37,8 +37,6 @@ def generate_mcq(request: MCQRequest):
         "max_questions": request.max_questions
     }
     output = model["qg"].predict_mcq(payload)
-    print(output)
-    return output
 
     options = output["questions"][0]["options"] + output["questions"][0]["extra_options"]
     options = random.sample(options, 3)
@@ -49,6 +47,8 @@ def generate_mcq(request: MCQRequest):
         "answer": output["questions"][0]["answer"],
         "wrongAnswers": options
     }
+
+    return result
 
 class SummarizeRequest(BaseModel):
     text: str
