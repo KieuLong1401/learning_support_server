@@ -18,10 +18,10 @@ model ={
 async def lifespan(app: FastAPI):
     from Questgen import main
     model["qg"] = main.QGen()
-    model["summarizer"] = pipeline(
-        "summarization", 
-        model="lcw99/t5-base-korean-text-summary", 
-        tokenizer="lcw99/t5-base-korean-text-summary") #alter: finetune model
+    # model["summarizer"] = pipeline(
+    #     "summarization", 
+    #     model="lcw99/t5-base-korean-text-summary", 
+    #     tokenizer="lcw99/t5-base-korean-text-summary") #alter: finetune model
     
     yield
 
@@ -50,18 +50,18 @@ def generate_mcq(request: MCQRequest):
 
     return result
 
-class SummarizeRequest(BaseModel):
-    text: str
-@app.post("/summarize")
-def summarize_text(request: SummarizeRequest):
-    text = request.text
-    summary = model["summarizer"](
-        text,
-        max_length=200,
-        min_length=20,
-        truncation=True
-    )
+# class SummarizeRequest(BaseModel):
+#     text: str
+# @app.post("/summarize")
+# def summarize_text(request: SummarizeRequest):
+#     text = request.text
+#     summary = model["summarizer"](
+#         text,
+#         max_length=200,
+#         min_length=20,
+#         truncation=True
+#     )
 
-    return {
-        "summary": summary[0]["summary_text"]
-    }
+#     return {
+#         "summary": summary[0]["summary_text"]
+#     }

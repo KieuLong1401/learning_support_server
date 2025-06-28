@@ -1,4 +1,4 @@
-from main import BoolQGen, AnswerPredictor
+from Questgen.main import BoolQGen, AnswerPredictor
 
 # if __name__ == "__main__":
 #     bool_gen = BoolQGen()

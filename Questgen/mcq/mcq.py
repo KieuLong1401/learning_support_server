@@ -55,10 +55,10 @@ def sense2vec_get_words(word,s2v):
     word = word.replace(" ", "_")
 
     sense = s2v.get_best_sense(word)
-    most_similar = s2v.most_similar(sense, n=15)
+    most_similar = s2v.most_similar(sense, n=50)
 
     compare_list = [word_preprocessed]
-    for each_word in most_similar:
+    for each_word in most_similar[10:]:
         append_word = each_word[0].split("|")[0].replace("_", " ")
         append_word = append_word.strip()
         append_word_processed = append_word.lower()
@@ -135,7 +135,7 @@ def filter_phrases(phrase_keys,max,normalized_levenshtein ):
     if len(phrase_keys)>0:
         filtered_phrases.append(phrase_keys[0])
         for ph in phrase_keys[1:]:
-            if is_far(filtered_phrases,ph,0.7,normalized_levenshtein ):
+            if is_far(filtered_phrases,ph,0.8,normalized_levenshtein ):
                 filtered_phrases.append(ph)
             if len(filtered_phrases)>=max:
                 break
@@ -188,27 +188,32 @@ def get_phrases(doc):
 
 
 def get_keywords(nlp,text,max_keywords,s2v,fdist,normalized_levenshtein,no_of_sentences):
+    import random
     doc = nlp(text)
     max_keywords = int(max_keywords)
+    double_keywords = max_keywords * 2
 
     keywords = get_nouns_multipartite(text)
     keywords = sorted(keywords, key=lambda x: fdist[x])
-    keywords = filter_phrases(keywords, max_keywords,normalized_levenshtein )
+    keywords = filter_phrases(keywords, double_keywords, normalized_levenshtein)
 
     phrase_keys = get_phrases(doc)
-    filtered_phrases = filter_phrases(phrase_keys, max_keywords,normalized_levenshtein )
+    filtered_phrases = filter_phrases(phrase_keys, double_keywords, normalized_levenshtein)
 
     total_phrases = keywords + filtered_phrases
+    total_phrases_filtered = filter_phrases(total_phrases, min(double_keywords, 2*no_of_sentences), normalized_levenshtein)
 
-    total_phrases_filtered = filter_phrases(total_phrases, min(max_keywords, 2*no_of_sentences),normalized_levenshtein )
-
-
-    answers = []
+    # Lọc các đáp án khả dụng
+    candidate_answers = []
     for answer in total_phrases_filtered:
-        if answer not in answers and MCQs_available(answer,s2v):
-            answers.append(answer)
+        if answer not in candidate_answers and MCQs_available(answer, s2v):
+            candidate_answers.append(answer)
 
-    answers = answers[:max_keywords]
+    # Chọn ngẫu nhiên max_keywords đáp án
+    if len(candidate_answers) > max_keywords:
+        answers = random.sample(candidate_answers, max_keywords)
+    else:
+        answers = candidate_answers
     return answers
 
 
