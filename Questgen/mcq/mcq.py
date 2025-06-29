@@ -1,25 +1,12 @@
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import time
 import torch
-from transformers import T5ForConditionalGeneration,T5Tokenizer
 import random
-import spacy
-import zipfile
-import os
-import json
-from sense2vec import Sense2Vec
-import requests
 from collections import OrderedDict
 import string
 import pke
 import nltk
-from nltk import FreqDist
-nltk.download('brown')
 nltk.download('stopwords')
-nltk.download('popular')
+nltk.download('punkt')
 from nltk.corpus import stopwords
-from nltk.corpus import brown
 from similarity.normalized_levenshtein import NormalizedLevenshtein
 from nltk.tokenize import sent_tokenize
 from flashtext import KeywordProcessor
@@ -78,10 +65,9 @@ def get_options(answer,s2v):
     try:
         distractors = sense2vec_get_words(answer,s2v)
         if len(distractors) > 0:
-            print(" Sense2vec_distractors successful for word : ", answer)
             return distractors,"sense2vec"
     except:
-        print (" Sense2vec_distractors failed for word : ",answer)
+        pass
 
 
     return distractors,"None"
@@ -229,13 +215,12 @@ def generate_questions_mcq(keyword_sent_mapping,device,tokenizer,model,sense2vec
     encoding = tokenizer.batch_encode_plus(batch_text, pad_to_max_length=True, return_tensors="pt")
 
 
-    print ("Running model for generation")
     input_ids, attention_masks = encoding["input_ids"].to(device), encoding["attention_mask"].to(device)
 
     with torch.no_grad():
         outs = model.generate(input_ids=input_ids,
                               attention_mask=attention_masks,
-                              max_length=150)
+                              max_length=100)
 
     output_array ={}
     output_array["questions"] =[]
@@ -276,7 +261,6 @@ def generate_normal_questions(keyword_sent_mapping,device,tokenizer,model):  #fo
     encoding = tokenizer.batch_encode_plus(batch_text, pad_to_max_length=True, return_tensors="pt")
 
 
-    print ("Running model for generation")
     input_ids, attention_masks = encoding["input_ids"].to(device), encoding["attention_mask"].to(device)
 
     with torch.no_grad():

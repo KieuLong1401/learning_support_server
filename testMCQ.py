@@ -1,16 +1,59 @@
-import os
 import asyncio
-import requests
-
 from pprint import pprint
-
 from Questgen import main
 from googletrans import Translator
+import time
 
-async def google_translate(text, src='ko', dest='en'):
-    translator = Translator()
-    result = await translator.translate(text, src=src, dest=dest)
-    return result.text
+translator = Translator()
+async def google_translate(texts, src='ko', dest='en'):
+    if isinstance(texts, list):
+        results = await translator.translate(texts, src=src, dest=dest)
+        return [r.text for r in results]
+    else:
+        result = await translator.translate(texts, src=src, dest=dest)
+        return result.text
+    
+async def question_generation(text):
+    start = time.time()
+    text = text.replace('\n', ' ')
+    translated_text = await google_translate(text, src='ko', dest='en')
+
+    payload = {
+        "input_text": translated_text,
+    }
+    qg = main.QGen()
+    output = qg.predict_mcq(payload)
+    questions = output["questions"]
+
+    translated_questions = []
+    for question in questions:
+        texts_to_translate = [
+            question["question_statement"],
+            question["answer"],
+            *question["options"],
+            *question["extra_options"],
+            question["context"]
+        ]
+        translated_results = await google_translate(texts_to_translate, src='en', dest='ko')
+
+        question_statement = translated_results[0]
+        answer = translated_results[1]
+        options = translated_results[2:2+len(question["options"])]
+        extra_options = translated_results[2+len(question["options"]):2+len(question["options"])+len(question["extra_options"])]
+        context = translated_results[-1]
+
+        translated_questions.append({
+            "question_statement": question_statement,
+            "answer": answer,
+            "options": options,
+            "extra_options": extra_options,
+            "context": context
+        })
+    end = time.time()
+    print(f"Translation and question generation took {end - start:.2f} seconds")
+
+    return translated_questions
+
 
 text = """
 운영체제(Operating System, OS)는 컴퓨터 시스템의 핵심 소프트웨어로서, 사용자와 하드웨어 간의 중재자 역할을 수행하며, 시스템 자원의 효율적 
@@ -25,31 +68,6 @@ text = """
 보안 정책을 기반으로 설계되어 다양한 사용자 요구를 충족시킵니다. 최근에는 클라우드 컴퓨팅, IoT, 엣지 컴퓨팅 등의 발전과 함께 운영체제의 경량화, 
 보안성 강화, 실시간 처리 능력이 점점 더 중요해지고 있습니다.
 """
-text = text.replace('\n', ' ')
-translated_text = asyncio.run(google_translate(text, src='ko', dest='en'))
-
-payload = {
-    "input_text": translated_text,
-}
-
-qg = main.QGen()
-output = qg.predict_mcq(payload)
-questions = output["questions"]
-
-translated_questions = []
-for question in questions:
-    question_statement = asyncio.run(google_translate(question["question_statement"], src='en', dest='ko'))
-    answer = asyncio.run(google_translate(question["answer"], src='en', dest='ko'))
-    options = [asyncio.run(google_translate(option, src='en', dest='ko')) for option in question["options"]]
-    extra_options = [asyncio.run(google_translate(option, src='en', dest='ko')) for option in question["extra_options"]]
-    context = asyncio.run(google_translate(question["context"], src='en', dest='ko'))
-
-    translated_questions.append({
-        "question_statement": question_statement,
-        "answer": answer,
-        "options": options,
-        "extra_options": extra_options,
-        "context": context
-    })
+translated_questions = asyncio.run(question_generation(text))
 
 pprint(translated_questions)
