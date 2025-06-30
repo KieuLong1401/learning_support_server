@@ -30,7 +30,6 @@ def edits(word):
     inserts    = [L + c + R               for L, R in splits for c in letters]
     return set(deletes + transposes + replaces + inserts)
 
-
 def sense2vec_get_words(word,s2v):
     output = []
 
@@ -42,10 +41,10 @@ def sense2vec_get_words(word,s2v):
     word = word.replace(" ", "_")
 
     sense = s2v.get_best_sense(word)
-    most_similar = s2v.most_similar(sense, n=50)
+    most_similar = s2v.most_similar(sense, n=40)
 
     compare_list = [word_preprocessed]
-    for each_word in most_similar[10:]:
+    for each_word in most_similar:
         append_word = each_word[0].split("|")[0].replace("_", " ")
         append_word = append_word.strip()
         append_word_processed = append_word.lower()
@@ -209,7 +208,8 @@ def generate_questions_mcq(keyword_sent_mapping,device,tokenizer,model,sense2vec
     for answer in answers:
         txt = keyword_sent_mapping[answer]
         context = "context: " + txt
-        text = context + " " + "answer: " + answer + " </s>"
+        highlighted_context = context.replace(answer, f"<hl> {answer} <hl>")
+        text = f"generate question: {highlighted_context}"
         batch_text.append(text)
 
     encoding = tokenizer.batch_encode_plus(batch_text, pad_to_max_length=True, return_tensors="pt")
@@ -220,7 +220,9 @@ def generate_questions_mcq(keyword_sent_mapping,device,tokenizer,model,sense2vec
     with torch.no_grad():
         outs = model.generate(input_ids=input_ids,
                               attention_mask=attention_masks,
-                              max_length=100)
+                              max_length=64,
+                              num_beams=4,
+                              early_stopping=True)
 
     output_array ={}
     output_array["questions"] =[]
@@ -239,9 +241,12 @@ def generate_questions_mcq(keyword_sent_mapping,device,tokenizer,model,sense2vec
         individual_question["options"], individual_question["options_algorithm"] = get_options(val, sense2vec)
 
         individual_question["options"] =  filter_phrases(individual_question["options"], 10,normalized_levenshtein)
-        index = 3
-        individual_question["extra_options"]= individual_question["options"][index:]
-        individual_question["options"] = individual_question["options"][:index]
+        if len(individual_question["options"]) >= 3:
+            selected_options = random.sample(individual_question["options"], 3)
+        else:
+            continue
+        individual_question["extra_options"] = [opt for opt in individual_question["options"] if opt not in selected_options]
+        individual_question["options"] = selected_options
         individual_question["context"] = keyword_sent_mapping[val]
      
         if len(individual_question["options"])>0:
@@ -291,4 +296,4 @@ def generate_normal_questions(keyword_sent_mapping,device,tokenizer,model):  #fo
 def random_choice():
     a = random.choice([0,1])
     return bool(a)
-    
+

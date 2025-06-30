@@ -1,6 +1,6 @@
 import time
 import torch
-from transformers import T5ForConditionalGeneration,T5Tokenizer
+from transformers import T5ForConditionalGeneration,T5Tokenizer, AutoTokenizer, AutoModelForSeq2SeqLM
 import random
 import spacy
 from sense2vec import Sense2Vec
@@ -22,8 +22,8 @@ class QGen:
     
     def __init__(self):
 
-        self.tokenizer = T5Tokenizer.from_pretrained('t5-large', model_max_length=1024)
-        model = T5ForConditionalGeneration.from_pretrained('Parth/result')
+        self.tokenizer = AutoTokenizer.from_pretrained("valhalla/t5-base-qg-hl")
+        model = AutoModelForSeq2SeqLM.from_pretrained("valhalla/t5-base-qg-hl")
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
         # model.eval()

@@ -4,17 +4,11 @@ chi load model khi server startup
 Dùng http://localhost:8000/docs (Swagger UI của FastAPI) để test nhanh các API.
 dung try-catch voi code goi model, api ngoai, xu ly file, xu ly request, xy ly async, xy ly json
 dung icon cua Lucide
-
+ ✅
 quy trinh:
-    ✅text area
-    ✅summarize
     quest generate
-        korean
-    exam score analyst
-    use localstorage
-    part tabs
-    project tabs
-    export file
-    translate
-    fine-tune
+        ✅korean
+        ✅better distractor
+            ✅Tăng ngưỡng Levenshtein distance để loại bỏ các distractor quá giống đáp án đúng
+        auto choose max quest to generate base on main keywords count
 

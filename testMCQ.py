@@ -20,9 +20,11 @@ async def question_generation(text):
 
     payload = {
         "input_text": translated_text,
+        "max_questions": 4
     }
     qg = main.QGen()
     output = qg.predict_mcq(payload)
+    return output
     questions = output["questions"]
 
     translated_questions = []
