@@ -10,5 +10,9 @@ quy trinh:
         ✅korean
         ✅better distractor
             ✅Tăng ngưỡng Levenshtein distance để loại bỏ các distractor quá giống đáp án đúng
-        auto choose max quest to generate base on main keywords count
-
+            ✅add thresh parameters to phrase_filter
+        get max valid keyword
+            get key word that have more than 3 options
+        ✅delete extra option and statement
+        ✅increase keyword search in sense2vec_get_words
+        ✅add custom n in get nouns

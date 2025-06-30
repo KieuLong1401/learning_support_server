@@ -33,7 +33,6 @@ async def question_generation(text):
             question["question_statement"],
             question["answer"],
             *question["options"],
-            *question["extra_options"],
             question["context"]
         ]
         translated_results = await google_translate(texts_to_translate, src='en', dest='ko')
@@ -41,14 +40,12 @@ async def question_generation(text):
         question_statement = translated_results[0]
         answer = translated_results[1]
         options = translated_results[2:2+len(question["options"])]
-        extra_options = translated_results[2+len(question["options"]):2+len(question["options"])+len(question["extra_options"])]
         context = translated_results[-1]
 
         translated_questions.append({
             "question_statement": question_statement,
             "answer": answer,
             "options": options,
-            "extra_options": extra_options,
             "context": context
         })
     end = time.time()

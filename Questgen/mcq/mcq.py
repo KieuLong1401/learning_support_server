@@ -41,7 +41,7 @@ def sense2vec_get_words(word,s2v):
     word = word.replace(" ", "_")
 
     sense = s2v.get_best_sense(word)
-    most_similar = s2v.most_similar(sense, n=40)
+    most_similar = s2v.most_similar(sense, n=60)
 
     compare_list = [word_preprocessed]
     for each_word in most_similar:
@@ -115,19 +115,19 @@ def is_far(words_list,currentword,thresh,normalized_levenshtein):
     else:
         return False
 
-def filter_phrases(phrase_keys,max,normalized_levenshtein ):
+def filter_phrases(phrase_keys,max,normalized_levenshtein, thresh=0.7 ):
     filtered_phrases =[]
     if len(phrase_keys)>0:
         filtered_phrases.append(phrase_keys[0])
         for ph in phrase_keys[1:]:
-            if is_far(filtered_phrases,ph,0.8,normalized_levenshtein ):
+            if is_far(filtered_phrases,ph,thresh,normalized_levenshtein ):
                 filtered_phrases.append(ph)
             if len(filtered_phrases)>=max:
                 break
     return filtered_phrases
 
 
-def get_nouns_multipartite(text):
+def get_nouns_multipartite(text, n=10):
     out = []
 
     extractor = pke.unsupervised.MultipartiteRank()
@@ -146,7 +146,7 @@ def get_nouns_multipartite(text):
     except:
         return out
 
-    keyphrases = extractor.get_n_best(n=10)
+    keyphrases = extractor.get_n_best(n=n)
 
     for key in keyphrases:
         out.append(key[0])
@@ -178,7 +178,7 @@ def get_keywords(nlp,text,max_keywords,s2v,fdist,normalized_levenshtein,no_of_se
     max_keywords = int(max_keywords)
     double_keywords = max_keywords * 2
 
-    keywords = get_nouns_multipartite(text)
+    keywords = get_nouns_multipartite(text, n=double_keywords*2)
     keywords = sorted(keywords, key=lambda x: fdist[x])
     keywords = filter_phrases(keywords, double_keywords, normalized_levenshtein)
 
@@ -240,12 +240,11 @@ def generate_questions_mcq(keyword_sent_mapping,device,tokenizer,model,sense2vec
         individual_question["id"] = index+1
         individual_question["options"], individual_question["options_algorithm"] = get_options(val, sense2vec)
 
-        individual_question["options"] =  filter_phrases(individual_question["options"], 10,normalized_levenshtein)
+        individual_question["options"] =  filter_phrases(individual_question["options"], 10,normalized_levenshtein, 0.8)
         if len(individual_question["options"]) >= 3:
             selected_options = random.sample(individual_question["options"], 3)
         else:
             continue
-        individual_question["extra_options"] = [opt for opt in individual_question["options"] if opt not in selected_options]
         individual_question["options"] = selected_options
         individual_question["context"] = keyword_sent_mapping[val]
      

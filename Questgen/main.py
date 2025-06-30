@@ -43,6 +43,10 @@ class QGen:
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
             
+    def get_valid_keywords(self,text,max_questions,sentences_len):
+        keywords = get_keywords(self.nlp,text,max_questions,self.s2v,self.fdist,self.normalized_levenshtein,sentences_len)
+        return keywords
+
     def predict_mcq(self, payload):
         start = time.time()
         inp = {
@@ -56,7 +60,7 @@ class QGen:
         modified_text = joiner.join(sentences)
 
 
-        keywords = get_keywords(self.nlp,modified_text,inp['max_questions'],self.s2v,self.fdist,self.normalized_levenshtein,len(sentences) )
+        keywords = self.get_valid_keywords(modified_text,inp['max_questions'],len(sentences) )
 
 
         keyword_sentence_mapping = get_sentences_for_keyword(keywords, sentences)
@@ -78,7 +82,6 @@ class QGen:
                 return final_output
             end = time.time()
 
-            final_output["statement"] = modified_text
             final_output["questions"] = generated_questions["questions"]
             final_output["time_taken"] = end-start
             
@@ -119,7 +122,6 @@ class QGen:
             print(generated_questions)
 
             
-        final_output["statement"] = modified_text
         final_output["questions"] = generated_questions["questions"]
         
         if torch.device=='cuda':
