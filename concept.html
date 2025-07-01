@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Explain Stream Demo</title>
+</head>
+<body>
+  <h2>Concept Explanation Stream</h2>
+  <input id="word" value="entropy">
+  <button onclick="startStream()">Explain</button>
+  <pre id="output"></pre>
+  <script>
+    let evtSource;
+    function startStream() {
+      const word = document.getElementById('word').value;
+      document.getElementById('output').innerText = '';
+      if (evtSource) evtSource.close();
+      evtSource = new EventSource(`http://localhost:8000/explain_stream?word=${encodeURIComponent(word)}`);
+      evtSource.onmessage = function(event) {
+        document.getElementById('output').innerText += event.data;
+      };
+      evtSource.onerror = function() {
+        evtSource.close();
+      };
+    }
+  </script>
+</body>
+</html>

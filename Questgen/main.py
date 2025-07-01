@@ -16,6 +16,8 @@ from Questgen.mcq.mcq import get_keywords
 from Questgen.mcq.mcq import get_sentences_for_keyword
 from Questgen.mcq.mcq import generate_questions_mcq
 from Questgen.mcq.mcq import generate_normal_questions
+from Questgen.mcq.mcq import get_options
+from Questgen.mcq.mcq import filter_phrases
 import time
 
 class QGen:
@@ -42,10 +44,22 @@ class QGen:
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
-            
-    def get_valid_keywords(self,text,max_questions,sentences_len):
-        keywords = get_keywords(self.nlp,text,max_questions,self.s2v,self.fdist,self.normalized_levenshtein,sentences_len)
-        return keywords
+
+    def get_valid_mcq_count(self, text):
+        sentences = tokenize_sentences(text)
+        modified_text = ' '.join(sentences)
+
+        keywords = get_keywords(self.nlp,modified_text,10,self.s2v,self.fdist,self.normalized_levenshtein,len(sentences) )
+        if len(keywords) == 0: return 0
+
+        valid_keywords = []
+        for keyword in keywords:
+            options = get_options(keyword, self.s2v)[0]
+            options = filter_phrases(options, 10, self.normalized_levenshtein, 0.8)
+            if len(options) >= 3:
+                valid_keywords.append(keyword)
+
+        return len(valid_keywords)
 
     def predict_mcq(self, payload):
         start = time.time()
