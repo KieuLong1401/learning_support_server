@@ -5,7 +5,7 @@ import string
 import pke
 import nltk
 nltk.download('stopwords')
-nltk.download('punkt')
+nltk.download('punkt_tab')
 from nltk.corpus import stopwords
 from similarity.normalized_levenshtein import NormalizedLevenshtein
 from nltk.tokenize import sent_tokenize
@@ -44,7 +44,7 @@ def sense2vec_get_words(word,s2v):
     most_similar = s2v.most_similar(sense, n=60)
 
     compare_list = [word_preprocessed]
-    for each_word in most_similar:
+    for each_word in most_similar[10:]:
         append_word = each_word[0].split("|")[0].replace("_", " ")
         append_word = append_word.strip()
         append_word_processed = append_word.lower()

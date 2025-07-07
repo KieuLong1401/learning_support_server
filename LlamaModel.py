@@ -18,18 +18,22 @@ async def explain_concept(word):
     )
 
     parenthesesIsOpened = False
+
     for fragment in result:
         content = fragment.content
+
+        if not content: continue
 
         if (content.strip() == "("): 
             parenthesesIsOpened = True
             continue
-        if parenthesesIsOpened:
-            if content.strip() == "Translation": 
-                break
-            else:
+
+        if content.strip() == "Translation":
+            break
+        else:
+            if parenthesesIsOpened:
                 content = "(" + content
                 parenthesesIsOpened = False
-                
+
         yield f"data: {content}\n\n"
 

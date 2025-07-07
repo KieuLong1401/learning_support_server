@@ -74,7 +74,7 @@ class QGen:
         modified_text = joiner.join(sentences)
 
 
-        keywords = self.get_valid_keywords(modified_text,inp['max_questions'],len(sentences) )
+        keywords = get_keywords(self.nlp, modified_text,inp['max_questions'],self.s2v, self.fdist, self.normalized_levenshtein, len(sentences) )
 
 
         keyword_sentence_mapping = get_sentences_for_keyword(keywords, sentences)

@@ -15,64 +15,65 @@ example = {
  	"max_questions": "1"
 }
 
-# questGenModel = main.QGen()
+questGenModel = main.QGen()
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or specify your frontend origin
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True
 )
 
-# class MCQRequest(BaseModel):
-#     input_text: str
-#     max_questions: int = 5
-# @app.post("/generate-mcq")
-# async def generate_mcq(request: MCQRequest):
-#     text = request.input_text.replace('\n', ' ')
-#     translated_text = await google_translate(text, src='ko', dest='en')
-#     payload = {
-#         "input_text": translated_text,
-#         "max_questions": request.max_questions
-#     }
-#     output = questGenModel.predict_mcq(payload)
+class MCQRequest(BaseModel):
+    input_text: str
+    max_questions: int
+@app.post("/generate-mcq")
+async def generate_mcq(request: MCQRequest):
+    text = request.input_text.replace('\n', ' ')
+    translated_text = await google_translate(text, src='ko', dest='en')
+    payload = {
+        "input_text": translated_text,
+        "max_questions": request.max_questions
+    }
+    output = questGenModel.predict_mcq(payload)
 
-#     questions = output["questions"]
+    questions = output["questions"]
 
-#     translated_questions = []
-#     for question in questions:
-#         texts_to_translate = [
-#             question["question_statement"],
-#             question["answer"],
-#             *question["options"],
-#             question["context"]
-#         ]
-#         translated_results = await google_translate(texts_to_translate, src='en', dest='ko')
+    translated_questions = []
+    for question in questions:
+        texts_to_translate = [
+            question["question_statement"],
+            question["answer"],
+            *question["options"],
+            question["context"]
+        ]
+        translated_results = await google_translate(texts_to_translate, src='en', dest='ko')
 
-#         question_statement = translated_results[0]
-#         answer = translated_results[1]
-#         options = translated_results[2:2+len(question["options"])]
-#         context = translated_results[-1]
+        question_statement = translated_results[0]
+        answer = translated_results[1]
+        options = translated_results[2:2+len(question["options"])]
+        context = translated_results[-1]
 
-#         translated_questions.append({
-#             "question_statement": question_statement,
-#             "answer": answer,
-#             "options": options,
-#             "context": context
-#         })
+        translated_questions.append({
+            "question_statement": question_statement,
+            "answer": answer,
+            "options": options,
+            "context": context
+        })
 
-#     return translated_questions
+    return translated_questions
 
-# class ValidMCQCountRequest(BaseModel):
-#     input_text: str
-# @app.post("/valid_mcq_question_count")
-# async def valid_mcq_question_count(request: ValidMCQCountRequest):
-    # text = request.input_text.replace('\n', ' ')
-    # translated_text = await google_translate(text, src='ko', dest='en')
+class ValidMCQCountRequest(BaseModel):
+    input_text: str
+@app.post("/valid_mcq_question_count")
+async def valid_mcq_question_count(request: ValidMCQCountRequest):
+    text = request.input_text.replace('\n', ' ')
+    translated_text = await google_translate(text, src='ko', dest='en')
 
-    # valid_mcq_question_count = questGenModel.get_valid_mcq_count(translated_text)
-    # return {"valid_mcq_question_count": valid_mcq_question_count}
+    valid_mcq_question_count = questGenModel.get_valid_mcq_count(translated_text)
+    return {"valid_mcq_question_count": valid_mcq_question_count}
 
 @app.get("/explain_stream")
 async def explain_stream(request: Request):
