@@ -1,7 +1,4 @@
 use concurrently 
-chi load model khi server startup
-dung try-catch voi code goi model, api ngoai, xu ly file, xu ly request, xy ly async, xy ly json
-dung icon cua Lucide
  ✅
 quy trinh:
     mcq quest generate
@@ -18,6 +15,4 @@ quy trinh:
     explain_concept:
         ✅streaming with client
         ✅config for korean
-        
-    summary: 
         
