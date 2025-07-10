@@ -31,6 +31,7 @@ async def explain_concept(word):
                 continue
 
             if content.strip() == "Translation":
+                yield "data: [DONE]\n\n"
                 break
             else:
                 if parenthesesIsOpened:
