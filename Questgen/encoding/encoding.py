@@ -1,7 +1,3 @@
-import torch
-from transformers import T5ForConditionalGeneration,T5Tokenizer
-
-
 def greedy_decoding (inp_ids,attn_mask,model,tokenizer):
   greedy_output = model.generate(input_ids=inp_ids, attention_mask=attn_mask, max_length=256)
   Question =  tokenizer.decode(greedy_output[0], skip_special_tokens=True,clean_up_tokenization_spaces=True)

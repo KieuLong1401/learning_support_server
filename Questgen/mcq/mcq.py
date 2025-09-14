@@ -7,7 +7,6 @@ import nltk
 nltk.download('stopwords')
 nltk.download('punkt_tab')
 from nltk.corpus import stopwords
-from similarity.normalized_levenshtein import NormalizedLevenshtein
 from nltk.tokenize import sent_tokenize
 from flashtext import KeywordProcessor
 

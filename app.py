@@ -1,13 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 from pydantic import BaseModel
-from transformers import pipeline
-import random
 from utils import google_translate
 from Questgen import main
-from Questgen.mcq.mcq import tokenize_sentences, get_options
 from LlamaModel import explain_concept
 
 example = {

@@ -1,5 +1,4 @@
 import lmstudio as lms
-from utils import google_translate
 
 SERVER_URL = "localhost:1234"
 lms.configure_default_client(SERVER_URL)

@@ -1,18 +1,2 @@
-use concurrently 
- ✅
-quy trinh:
-    mcq quest generate
-        ✅korean
-        ✅better distractor
-            ✅Tăng ngưỡng Levenshtein distance để loại bỏ các distractor quá giống đáp án đúng
-            ✅add thresh parameters to phrase_filter
-        ✅get max valid keyword
-            ✅get key word that have more than 3 options
-        ✅delete extra option and statement
-        ✅increase keyword search in sense2vec_get_words
-        ✅add custom n in get nouns
 
-    explain_concept:
-        ✅streaming with client
-        ✅config for korean
         
