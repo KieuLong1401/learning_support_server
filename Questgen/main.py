@@ -10,7 +10,6 @@ from nltk import FreqDist
 nltk.download('brown', quiet=True, force=True)
 from nltk.corpus import brown
 from similarity.normalized_levenshtein import NormalizedLevenshtein
-from Questgen.encoding.encoding import beam_search_decoding
 from Questgen.mcq.mcq import tokenize_sentences
 from Questgen.mcq.mcq import get_keywords
 from Questgen.mcq.mcq import get_sentences_for_keyword
@@ -192,100 +191,3 @@ class QGen:
             torch.cuda.empty_cache()
         
         return output
-
-
-class BoolQGen:
-       
-    def __init__(self):
-        self.tokenizer = T5Tokenizer.from_pretrained('t5-base')
-        model = T5ForConditionalGeneration.from_pretrained('ramsrigouthamg/t5_boolean_questions')
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model.to(device)
-        # model.eval()
-        self.device = device
-        self.model = model
-        #self.set_seed(42)
-        
-    def set_seed(self,seed):
-        numpy.random.seed(seed)
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(seed)
-
-    def random_choice(self):
-        a = random.choice([0,1])
-        return bool(a)
-    
-
-    def predict_boolq(self,payload):
-        start = time.time()
-        inp = {
-            "input_text": payload.get("input_text"),
-            "max_questions": payload.get("max_questions", 4)
-        }
-
-        text = inp['input_text']
-        num= inp['max_questions']
-        sentences = tokenize_sentences(text)
-        joiner = " "
-        modified_text = joiner.join(sentences)
-        answer = self.random_choice()
-        form = "truefalse: %s passage: %s </s>" % (modified_text, answer)
-
-        encoding = self.tokenizer.encode_plus(form, return_tensors="pt")
-        input_ids, attention_masks = encoding["input_ids"].to(self.device), encoding["attention_mask"].to(self.device)
-
-        output = beam_search_decoding (input_ids, attention_masks,self.model,self.tokenizer)
-        if torch.device=='cuda':
-            torch.cuda.empty_cache()
-        
-        final= {}
-        final['Text']= text
-        final['Count']= num
-        final['Boolean Questions']= output
-        final['Answer']= answer
-            
-        return final
-            
-class AnswerPredictor:
-          
-    def __init__(self):
-        self.tokenizer = T5Tokenizer.from_pretrained('t5-large', model_max_length=1024)
-        model = T5ForConditionalGeneration.from_pretrained('Parth/boolean')
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model.to(device)
-        # model.eval()
-        self.device = device
-        self.model = model
-        #self.set_seed(42)
-        
-    def set_seed(self,seed):
-        numpy.random.seed(seed)
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(seed)
-
-    def greedy_decoding (inp_ids,attn_mask,model,tokenizer):
-        greedy_output = model.generate(input_ids=inp_ids, attention_mask=attn_mask, max_length=256)
-        Question =  tokenizer.decode(greedy_output[0], skip_special_tokens=True,clean_up_tokenization_spaces=True)
-        return Question.strip().capitalize()
-
-    def predict_answer(self,payload):
-        answers = []
-        inp = {
-                "input_text": payload.get("input_text"),
-                "input_question" : payload.get("input_question")
-            }
-        for ques in payload.get("input_question"):
-                
-            context = inp["input_text"]
-            question = ques
-            input = "question: %s <s> context: %s </s>" % (question,context)
-
-            encoding = self.tokenizer.encode_plus(input, return_tensors="pt")
-            input_ids, attention_masks = encoding["input_ids"].to(self.device), encoding["attention_mask"].to(self.device)
-            greedy_output = self.model.generate(input_ids=input_ids, attention_mask=attention_masks, max_length=256)
-            Question =  self.tokenizer.decode(greedy_output[0], skip_special_tokens=True,clean_up_tokenization_spaces=True)
-            answers.append(Question.strip().capitalize())
-
-        return answers
